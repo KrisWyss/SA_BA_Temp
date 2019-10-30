@@ -1,0 +1,198 @@
+\section{Redesign EMV-Filter}
+\label{chapter_RedesignEMV}
+
+Das Energieübertragungsnetz verträgt nur einen gewissen Prozentsatz an Strömen die einem ganzzahligen vielfachen des 50Hz Netzstromes entsprechen bevor es instabil wird. 
+Deshalb wird in der Norm ???? der Grenzwert für den THDi (Total Harmonic Destroiten)
+\begin{equation}
+\text{THDi}=\dfrac{\sqrt{\sum\limits_\text{n=2}^{50} I^{2}_\text{n}}}{I_{1}}  \qquad\text{mit}\qquad \text{THDi} \leq \text{8\%}
+\end{equation}
+aufgeführt.
+Zu beachten ist das die Zählvariable $n$ nur bis 50 geht.
+Dies ist erstaunlich da höhere Harmonische noch einen beträchtlichen Einfluss auf den THDi haben bei einem PWM Signal das mit einer Frequenz von 10kHz generiert wird.
+Diese Taktfrequenz erzeugt um 20kHz noch einige Harmonische, die beeinflussen den THDi. 
+Dies ist in \ref{fig:THDiverg}, wo der THDi für $n=50$ und $n=300$ berechnet wurde, gut ersichtlich.
+Wobei bei Zählvariable von 50 Harmonische bis 2kHz mit berücksichtigt werden und bei 600 bis 30kHz.
+\begin{figure}[h!]
+\begin{center}
+	\includegraphics[width=\linewidth, height=0.25\textheight]{images/THDi_vergleich.eps}
+	\caption{THDi Vergleich unterschiedliche Laufvariablen}
+	\label{fig:THDiverg}
+\end{center} 
+\end{figure}
+
+Der EMV-Filter (Elektromagnetische Verträglichkeit) hat primär zwei Ziele.
+
+\begin{itemize}
+	\item Filterung von Differential Mode Strömen
+	\item Filterung von Common Mode Strömen
+\end{itemize}
+
+Die Filterwirkung ist bidirektional und schützt das Netz wie auch den Inverter vor denn hochfrequenten Strömen.
+Schnelle Schaltvorgänge wie die PWM (Pulsweitenmodulation) begünstigen das entstehen von diesen. 
+
+\subsection{Common Mode Ströme}
+Wie die Namensgebung schon aussagt handelt es sich bei Common Mode Strömen um solche die auf 
+
+\subsection{Differential Mode Ströme}
+\label{chapter_diffModSt}
+
+\subsection{Auslegung}
+In diesem Kapitel ist beschrieben auf welchen technischen Grundlagen die im Inverter verbauten EMV-Filterkomponenten ausgelegt sind. 
+Die klassischen Auslegungsmethoden (Bessel, Tschebyscheff, etc.) wie sie für Signalpfade gelehrt werden versagen leider bei einem EMV-Filter. 
+Ein Grund dafür ist die Unbekannte Lastimpedanz vom Netz so wie die über die Last wechselnde Quellenimpedanz $Z_0$.
+So wie auch die Idee der Filterauslegung, die darauf ab zielt die schlecht möglichste Impedanzanpassung, zwischen dem Inverter und Netz zu erzielen und gleichzeitig das System stabil so wie die Filterverluste möglichst gering zu halten.
+Der Missmatch der Impedanzen sollte bei doppelter Schaltfrequenz maximal sein.
+\subsubsection{Common Mode Filter}
+Auf die Auslegung des Common Mode Filter wurde kein grosses Augenmerk gelegt, weil die parasitäre Kapazität
+\begin{equation}
+C_p=\dfrac{\epsilon \cdot A}{d}
+\end{equation}
+gegen Erde sehr gering ist. 
+Dies weil kein elektrisch leitendes Gehäuse Vorhanden ist.
+Der approximativ berechnete Widerstandswertwert 
+\begin{equation}
+X_c=\dfrac{1}{\omega \cdot C_p} \qquad\text{mit}\qquad
+\omega = 2\cdot\pi\cdot f,
+\end{equation}
+bei Frequenzen um 20 kHz, liegt im einstelligen Mega $\Omega$ Bereich.
+Somit wird der Common Mode Strom vernachlässig bar klein sein.
+
+Um jedoch vorbereitet zu sein für ein späteres anbringen eines Gehäuses ist ein Commen mode choke im EMV-Filter verbaut. 
+Es wurde die selbe gegen gewickelte Spule verwendet wie im Referenzmodel von TI ????.
+
+\subsubsection{Differential Mode Filter}
+Wie in \ref{chapter_diffModSt} beschrieben wird eine sehr starke Verzerrung des Stromes auf der Netzseite erwartet.
+Diese Stromverzerrung weg vom Sinus generiert einen sehr hohen THDi.
+Dieser gilt es zu minimieren bis die Normwerte eingehalten werden.
+Es gibt zwei Möglichkeiten einen EMV Filter auszulegen. 
+Erstere beruht auf Try\&error.  
+Mit Hilfe einer Simulation und dem Austausch von den Filterkomponenten wird versucht eine günstige Komonenten Wahl zu finden. Dies kann erfolgreich sein aber bei falscher Komponenten Wahl auch zu einem instabilen Gesamtsystem führen.
+Um dies zu umgehen gibt es diverse Step by Step Anleitung.
+Mit solchen ist der EMV-Filter ausgelegt worden. 
+
+\paragraph{Auslegung LC-Filter }
+Als erstes wurde mit Hilfe von \cite{birichaEMC} ein LC-Filter ausgelegt.
+Für die Auslegung von einem EMV-Filter bei Invertern ist es Wichtig den Gesamtwiderstand (Quellenwiderstand) 
+\begin{equation}
+Z_0=\frac{U_g^2}{P}
+\end{equation}
+des Inverters zu kennen, wobei die Netzspannung $U_g$ und die abgegeben Wirkleistung $P$ diesen beeinflussen.
+
+Gemäss dem Middlebrock Stabilitätskriterium
+muss für die Filterimpedanz $Z_f$ und den Quellenwiderstand $Z_0$ die Beziehung
+\[
+Z_f \ll Z_0
+\]
+gültig sein.
+Wenn dies nicht gewährleistet ist kann das  Gesamtsystem instabil werden. Mit dieser Bedingung wird der Maximalwert
+\begin{equation}
+Z_{fmax} = \dfrac{1}{10}\cdot Z_0 \approx 5\Omega
+\label{Zfmax}
+\end{equation}
+festgelegt.
+
+Eine weitere Wichtige Eigenschaft ist die Eckfrequenz $f_c$ des EMV-Filters. Liegt sie zu nahe bei der Netzfrequenz $\omega_g$ oder ist sie zu hoch und liegt in der Nähe von der PWM Schaltfrequenz $\omega_s$ könnten sich Resonanzeffekte negativ auswirken. 
+
+Somit gelten die Grenzbedingungen
+\[
+	Z_f < 5\Omega \qquad \text{und} \qquad 500Hz < f_c > 5kHz
+\]
+für die Auslegung.
+ 
+Mit einem Impedanzdiagramm, welches als graphische Unterstützung dient, wird der Filter ausgelegt.
+Ein solches ist in \ref{fig:ImpChart} dargestellt.
+
+Zuerst wird $Z_{fmax}$ eingezeichnet (grün). 
+Der ganze Bereich oberhalb von $Z_{fmax}$ (grau Hinterlegt) ist Sperrgebiet da eine Filterauslegung in diesem zu instabilem Gesamtsystem führen könnte. 
+In einem zweiten Schritt wird die Grenzfrequenz $f_{Cmin}$ eingetragen.
+Vom Schnittpunkt der zwei Geraden $Z_{fmax}$ und $f_{Cmin}$ werden zwei Linien im $45°$ Winkel gezeichnet. 
+An diesen werden die Werte für $C_{fmin}$ und $L_{fmax}$ des LC-Filters abgelesen. 
+Die Werte können im Erlaubten Bereich verändert werden dürfen aber die Grenzbedinungen nie verletzen.
+Die grau gestrichelten Linien zeigen die Grenzen für die obere Grenzbedienung $f_{Cmax}$. 
+
+Weil an Induktivitäten Ströme nicht springen können muss nun die grösstmögliche Induktiviät aus dem Diagramm herausgelesen werden.
+Dann ist sicher das unter den gegebenen Grenzbedingungen die best mögliche Stromglättung realisiert wird.
+Wie in \ref*{fig:ImpChart} ersichtlich sind dies einer Induktivität $L_{fmax} = 1.8mH$.
+Daraus resultiert $C_{fmin} = 70 \mu F$.
+
+Die Simulation hat gezeigt das eine L-Topologie nicht ausreicht um den THDi unter denn geforderten Normwert zu bringen.
+In \ref{SimRes} wird näher auf die Resultate eingegangen.
+\begin{figure}[h]
+	\begin{center}
+		\includegraphics[width=\linewidth]{images/ImpChart}
+		\caption{Impedanzdiagramm zur graphischen LC-Filter Auslegung}
+		\label{fig:ImpChart}
+	\end{center} 
+\end{figure}
+
+\paragraph{Auslegung LCL-Filter }
+In einem zweiten Versuch ist ein Filter in $\pi$-Topologie entworfen worden. 
+Die Auslegung des LCL-Filters, welche im folgenden beschrieben wird, beziehen sich auf die IEEE Publikation \cite{desLCLFilter}.
+
+%SChema LCL Filter erstellen
+Es gelten die selben Grenzbedingungen, für die maximale Filterimpedanz \ref{Zfmax} und für das Frequenzband der Grenzfrequenz, wie bei der Auslegung des LC-Filters um die Stabilität des Gesamtsystem zu gewährleisten.
+
+Bei der Auslegung gibt es drei Freiheitsgrade mit denen das gewünschte Filter designet werden kann.
+Als erstes wird festgelegt wie gross die inverterseitige Induktivität $L$ ist.
+Diese Festlegung basiert auf dem Wissen das \ref{Zfmax} gelten muss.
+Wir wählen 
+\begin{equation}
+L=\dfrac{1}{\omega_g\cdot X_L}\qquad \text{mit} \qquad   X_L=0.02\cdot Z_0
+\end{equation}
+
+In einem zweiten Schritt wird die Grösse der Filterkapazität $C_f$ festgelegt.
+Diese soll maximal $5\%$ des kapazitiven Quellenwiderstandes 
+\begin{equation}
+C_0 = \dfrac{1}{\omega_g\cdot Z_0}
+\end{equation}
+sein.
+
+Als letztes wird noch die Netzseitige Induktivität $L_g$ ausgelegt. 
+Diese wird als Verältnissfaktor $r$ zwischen $L$ und $L_g$ 
+angegeben.
+In ???? ist ein Diagramm ersichtlich wo auf der Abszisse $r$ aufgetragen ist.
+Es sind alle Grenzeinbedingungen ersichtlich welche eingehalten werden müssen.
+Zsätzlich ist noch die minimale Dämpfung im Plot eingezeichnet. Diese wurde auch $0.2$ festgelegt was bedeutet das die Dämpfung der Oberwellen mindestens $80/$ ist.
+
+\subsection{Simulationsresultate}
+\label{SimRes}
+
+
+% Notes:
+%-Einfühung: Warum Filter? SChlechtmöglichste Abpassung an Netz um Oberwellen gehalt gemäss Norm einzuhalten. Commenmode und differenzialmode erklären -> kein augenmerk auf commenmode weil Kapazität nach erde so klein das keine Commenmode ströme fliessen können -> Berechnung auf Papier!
+%
+%
+%- Netzimpedanz: Stand der Technik bei Hausinstallation ist max 1 Ohm Ohmscher Widerstand (Damit Schutzkonzept noch greift) Range ü[0.2; 1]
+%Cosp min ist 0.92
+%
+%- Filter mit LCL und RL als last... Weil Filterperformace beim Geräteausgang gemessen wird. Deshalb L-Nezt kein gültiger Filterparameter.
+%
+%- Commenmode chock wie in Referenzmodel
+%
+%- Zwei Filterentwürfe
+%1)  \cite{birichaEMC}.Ist entwurf für LC. Hat nicht gekalppt wegen Tradeoff zwischen Eckfrequenz/ZFilter zu ZQuelle/ -> Bild Impedanzchart einfügen!
+%Und Bauteilwerte viel grösser! L=18mh C = 80uF
+%
+%2) Nach Paper: Ist Entwurf für LCL Filter... Step by Step
+% Auslegung bei 12m/s?? Weil Z-b min! Um Stabilitätskriterium (Middlebrock) sicher nicht zu verletzen.
+%	Schema Zeichnen, steps erklären, Maltap Plot Filterentwurf einfügen und erklären, 
+%	Simulation bei 4m/s und 12m/s und die Viernetz parmamert (Nur R, Lklein und Rklein, Lkein und Rgross, Lgross und Rgross, Lgross und Rklein) -> in Simulationswerte für THD in Tabelle aufführen.
+%    Tabelle mit Elememente aufführen.
+%    
+%
+%
+%\begin{center}
+%  \begin{tabular}{|c|c|c|c|c|}
+%  	
+%  	\hline 
+%  	V\textsubscript{wind} (m/s) & $L_{min}$/$R_{min}$ & $L_{min}$/$R_{max}$ & $L_{max}$/$R_{min}$ & $L_{max}$/$R_{max}$  \\ 
+%  	\hline 
+%  	12 &  &  &  &  \\ 
+%  	\hline 
+%  	7 &  &  &  &  \\ 
+%  	\hline 
+%  	4 &  &  &  &  \\ 
+%  	\hline 
+%  	
+%  \end{tabular} 
+%\end{center}
