@@ -24,7 +24,6 @@
 \usepackage{graphicx}
 \usepackage{titletoc}			% Editieren des TOCs muss vor hyperref geladen werden
 \usepackage{tocloft}			% Editieren des TOCs muss vor hyperref geladen werden
-\usepackage{hyperref}
 \usepackage{hyphenat}			%Wortumbruch
 \hyphenation{he-lio-trope opos-sum}
 
@@ -52,52 +51,130 @@
 \usepackage{trfsigns}
 \usepackage{varwidth}
 \usepackage{wrapfig}
+\usepackage{hyperref}
+\usepackage{chngcntr}           %Nummerierung von Figuren Tabellen etc. Nach Kapitel
+\usepackage{pdflscape}			%Eine Seite Landscape
+%\usepackage{indentfirst}		%Einrücken von erster Zeile von Kapitel
+	
+
+
 
 %%%%%%%%%%%%%%%%%%%%%%%
 %% PDF Meta Data
 %%%%%%%%%%%%%%%%%%%%%%%
 
-\hypersetup{pdftex,
-pdfauthor={\Author},
-pdftitle={\Title},
-pdfsubject={\TitleInfo},
-%pdfkeywords={Some Keywords},
-pdfproducer={Latex with hyperref},
-%pdfcreator={pdflatex}
+\hypersetup{
+	pdfauthor={\Author},
+	pdftitle={\Title},
+	pdfsubject={\TitleInfo},
+	%pdfkeywords={Some Keywords},
+	pdfproducer={Latex with hyperref}
+	%pdfcreator={pdflatex}
+}
+%\hypersetup{pdftex,
+%	pdfauthor={\Author},
+%	pdftitle={\Title},
+%	pdfsubject={\TitleInfo},
+%	%pdfkeywords={Some Keywords},
+%	%pdfproducer={Latex with hyperref}
+%	%pdfcreator={pdflatex}
+%}
+
+%%%%%%%%%%%%%%%%%%%%%%%
+%% Setup Inkscape Import
+%%%%%%%%%%%%%%%%%%%%%%%
+\usepackage{import}
+\graphicspath{{images/}}
+\newcommand{\executeiffilenewer}[3]{%
+	\ifnum\pdfstrcmp{\pdffilemoddate{#1}}%
+	{\pdffilemoddate{#2}}>0%
+	{\immediate\write18{#3}}\fi%
+}
+\newcommand{\includesvg}[1]{%
+	\executeiffilenewer{#1.svg}{#1.pdf}%
+	{inkscape -z -D --file=#1.svg %
+		--export-pdf=#1.pdf --export-latex}%
+	\input{#1.pdf_tex}%
 }
 
 %%%%%%%%%%%%%%%%%%%%%%%
 %% Setup Tikz
 %%%%%%%%%%%%%%%%%%%%%%%
-%\usepackage{tikz}
-%\usepackage{struktex}
-%\usepackage{schemabloc}
-%\usepackage[normalem]{ulem}
-%\usetikzlibrary{circuits}
-%\usetikzlibrary{arrows}
-%\usetikzlibrary{circuits.ee.IEC}
-%\usetikzlibrary{patterns}
-%\usetikzlibrary{positioning}
-%\usetikzlibrary{shapes,arrows}
-%
-%\usepackage{pgfplots}
-%\usepackage{pgfplotstable}
-%\pgfplotsset{compat=newest}
-%
-%\tikzstyle{block} = [draw, rectangle, minimum height=3em, minimum width=4em]
-%\tikzstyle{input} = [coordinate]
-%\tikzstyle{output} = [coordinate]
-%\tikzstyle{pinstyle} = [pin edge={to-,thin,black}]
-%\tikzstyle{sum} = [draw, circle, node distance=1em, minimum height=1.5em]
-%\tikzset{>=latex}
-%\tikzset{%
-%	block/.style    = {draw, thick, rectangle, minimum height = 3em,
-%		minimum width = 3em},
-%	sum/.style      = {draw, circle, node distance = 1.5cm}, % Adder
-%	input/.style    = {coordinate}, % Input
-%	output/.style   = {coordinate} % Output
-%}
-%\newcommand\Umbruch[2][3cm]{\begin{varwidth}{#1}\centering#2\end{varwidth}}
+\usepackage{tikz}
+\usepackage{struktex}
+\usepackage{schemabloc}
+\usepackage[normalem]{ulem}
+\usetikzlibrary{circuits}
+\usetikzlibrary{arrows}
+\usetikzlibrary{circuits.ee.IEC}
+\usetikzlibrary{patterns}
+\usetikzlibrary{positioning}
+\usetikzlibrary{shapes,arrows}
+
+\usetikzlibrary{patterns,decorations.pathreplacing}
+\usetikzlibrary{decorations.pathreplacing}
+\usetikzlibrary{external}
+\usetikzlibrary{datavisualization}
+\usepackage[europeanvoltages,
+europeancurrents,
+europeanresistors,   % rectangular shape
+americaninductors,   % "4-bumbs" shape
+europeanports,       % rectangular logic ports
+siunitx,             % #1<#2>
+emptydiodes,
+noarrowmos,
+straightvoltages,
+smartlabels]         % lables are rotated in a smart way
+{circuitikz}          %
+
+\usepackage{pgfplots}
+\usepackage{pgfplotstable}
+\pgfplotsset{compat=newest}
+
+\tikzstyle{block} = [draw, rectangle, minimum height=3em, minimum width=4em]
+\tikzstyle{input} = [coordinate]
+\tikzstyle{output} = [coordinate]
+\tikzstyle{pinstyle} = [pin edge={to-,thin,black}]
+\tikzstyle{sum} = [draw, circle, node distance=1em, minimum height=1.5em]
+\tikzset{>=latex}
+\tikzset{%
+	block/.style    = {draw, thick, rectangle, minimum height = 3em,
+		minimum width = 3em},
+	sum/.style      = {draw, circle, node distance = 1.5cm}, % Adder
+	input/.style    = {coordinate}, % Input
+	output/.style   = {coordinate} % Output
+}
+
+\usepackage{pgfplots}
+\pgfplotsset{width=10cm,compat=1.9}
+
+\newcommand\Umbruch[2][3cm]{\begin{varwidth}{#1}\centering#2\end{varwidth}}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%
+% Import Matlab Code 
+%%%%%%%%%%%%%%%%%%%%%%%
+
+\usepackage{listings}
+\lstset{ 
+    %basicstyle=\color{red},
+breaklines=true,%
+morekeywords={matlab2tikz},
+keywordstyle=\color{blue},%
+morekeywords=[2]{1}, keywordstyle=[2]{\color{black}},
+identifierstyle=\color{black},%
+stringstyle=\color{mylilas},
+commentstyle=\color{mygreen},%
+showstringspaces=false,%without this there will be a symbol in the places where there is a space
+numbers=left,%
+numberstyle={\tiny \color{black}},% size of the numbers
+numbersep=9pt, % this defines how far the numbers are from the text
+emph=[1]{for,end,break},emphstyle=[1]\color{red}, %some words to emphasise
+%emph=[2]{word1,word2}, emphstyle=[2]{style},  
+	frame=single,	                			% adds a frame around the code
+%	tabsize=2,                				% sets default tabsize to 2 spaces
+%	captionpos=b,                   			% sets the caption-position to bottom
+}
 
 %%%%%%%%%%%%%%%%%%%%%%%
 % Caption Setup 
@@ -111,17 +188,24 @@ pdfproducer={Latex with hyperref},
 {\parskip=-5pt\par\nopagebreak\centering}
 {\parskip=-15pt\par\noindent\ignorespacesafterend}
 
+%Counting Anb. Tab, Fig
+\counterwithin{figure}{section}
+\counterwithin{table}{section}
+\counterwithin{equation}{section}
+
+
 %Rewritte Referenze Style and TOF,TOT
-\renewcommand{\thefigure}{Abb. \arabic{figure}}
-\renewcommand{\thetable}{Tab. \arabic{table}}
-\renewcommand{\theequation}{Eq. \arabic{equation}}
+\renewcommand{\thefigure}{Abb. \arabic{section}.\arabic{figure}}
+\renewcommand{\thetable}{Tab. \arabic{section}.\arabic{table}}
+\renewcommand{\theequation}{\arabic{section}.\arabic{equation}}
+
 
 \addto{\captionsngerman}{%
-    %	\renewcommand*{\contentsname}{Inhalt}
-    %	\renewcommand*{\listfigurename}{Abbildungen}
-    %	\renewcommand*{\listtablename}{Tabellen}
-    \renewcommand*{\figurename}{} %Delet Figure name 
-    \renewcommand*{\tablename}{}
+	%	\renewcommand*{\contentsname}{Inhalt}
+	%	\renewcommand*{\listfigurename}{Abbildungen}
+	%	\renewcommand*{\listtablename}{Tabellen}
+	\renewcommand*{\figurename}{} %Delet Figure name 
+	\renewcommand*{\tablename}{}
 }
 \setlength{\cftfignumwidth}{2cm}	% Width of equation number in List of Figure
 \setlength{\cfttabnumwidth}{2cm}	% Width of equation number in List of Table
@@ -130,7 +214,7 @@ pdfproducer={Latex with hyperref},
 \newcommand{\listequationsname}{Gleichungen}
 \newlistof{myequations}{equ}{\listequationsname}
 \newcommand{\myequations}[1]{% 
-    \addcontentsline{equ}{myequations}{\protect\numberline{\theequation}#1}\par}
+	\addcontentsline{equ}{myequations}{\protect\numberline{\theequation}#1}\par}
 \setlength{\cftmyequationsnumwidth}{2cm}% Width of equation number in List of Equations
 
 
@@ -147,36 +231,36 @@ pdfproducer={Latex with hyperref},
 %\fancyhead[ER]{} % "E" for "even"
 
 \fancypagestyle{plain}{
-    \fancyhf{} %alle Kopf- und Fußzeilenfelder bereinigen
-    
-    \fancyhead[OR]{\textsl{\rightmark}}
-    \fancyhead[ER]{\textsl{\rightmark}}
-    \fancyhead[C]{} %zentrierte Kopfzeile
-    \fancyhead[OL]{\Title}
-    \fancyhead[EL]{\Title}
-    \renewcommand{\headrulewidth}{0.4pt} %obere Trennlinie
-    
-    %\fancyfoot[OR]{Seite \thepage\ / \pageref{LastPage}}
-    %\fancyfoot[ER]{\today}
-    \fancyfoot[C]{\pageref{LastPage}}
-    %\fancyfoot[EL]{Seite \thepage\ / \pageref{LastPage}}
-    %\fancyfoot[OL]{\today}
-    %\renewcommand{\footrulewidth}{0.4pt} %untere Trennlinie
+	\fancyhf{} %alle Kopf- und Fußzeilenfelder bereinigen
+	
+	\fancyhead[OR]{\textsl{\rightmark}}
+	\fancyhead[ER]{\textsl{\rightmark}}
+	\fancyhead[C]{} %zentrierte Kopfzeile
+	\fancyhead[OL]{\Title}
+	\fancyhead[EL]{\Title}
+	\renewcommand{\headrulewidth}{0.4pt} %obere Trennlinie
+	
+	%\fancyfoot[OR]{Seite \thepage\ / \pageref{LastPage}}
+	%\fancyfoot[ER]{\today}
+    \fancyfoot[C]{\thepage}
+   %\fancyfoot[EL]{Seite \thepage\ / \pageref{LastPage}}
+	%\fancyfoot[OL]{\today}
+	%\renewcommand{\footrulewidth}{0.4pt} %untere Trennlinie
 }
 
 \fancypagestyle{appendix}{
-    \fancyhf{} %alle Kopf- und Fußzeilenfelder bereinigen
-    \fancyhead[R]{} %Kopfzeile links
-    \fancyhead[C]{} %zentrierte Kopfzeile
-    \fancyhead[L]{} %Kopfzeile rechts
-    \renewcommand{\headrulewidth}{0pt} %obere Trennlinie
-    
-    \fancyfoot[OR]{Seite \thepage\ / \pageref{LastPage}}
-    \fancyfoot[ER]{\today}
-    \fancyfoot[C]{}
-    \fancyfoot[EL]{Seite \thepage\ / \pageref{LastPage}}
-    \fancyfoot[OL]{\today}
-    \renewcommand{\footrulewidth}{0.4pt} %untere Trennlinie
+	\fancyhf{} %alle Kopf- und Fußzeilenfelder bereinigen
+	\fancyhead[R]{} %Kopfzeile links
+	\fancyhead[C]{} %zentrierte Kopfzeile
+	\fancyhead[L]{} %Kopfzeile rechts
+	\renewcommand{\headrulewidth}{0pt} %obere Trennlinie
+	
+	%\fancyfoot[OR]{Seite \thepage\ / \pageref{LastPage}}
+	%\fancyfoot[ER]{\today}
+	\fancyfoot[C]{\thepage}
+	%\fancyfoot[EL]{Seite \thepage\ / \pageref{LastPage}}
+	%\fancyfoot[OL]{\today}
+	%\renewcommand{\footrulewidth}{0.4pt} %untere Trennlinie
 }
 
 
@@ -221,6 +305,8 @@ pdfproducer={Latex with hyperref},
 %\titlespacing{name=\subsection}{-\marginparwidth+10pt}{0pt}{0.2em}
 %\titlespacing{name=\subsubsection}{-\marginparwidth+14pt}{0.2em}{0.2em}
 %\titlespacing{name=\paragraph}{-\marginparwidth+18pt}{0.2em}{0.2em}
+%\newcommand{\subsectionbreak}{\clearpage}
+%\setuphead[subsection][page=yes] % or page=right
 
 %\titlespacing{name=\section}{1pt}{0pt}{0.2em}
 %\titlespacing{name=\subsection}{1pt}{0pt}{0.2em}
@@ -275,7 +361,9 @@ pdfproducer={Latex with hyperref},
 \newcolumntype{L}[1]{>{\raggedright\arraybackslash}p{#1}} % Tabelleninhalt linksausgerichtet
 \newcolumntype{R}[1]{>{\raggedleft\arraybackslash}p{#1}} % Tabelleninhalt rechtsausgerichtet
 \newcolumntype{C}[1]{>{\centering\arraybackslash}p{#1}} %  Tabelleninhalt zentriert
-
+\renewcommand\arraystretch{1.5}
+\usepackage{array}
+\usepackage{booktabs}
 
 %%%%%%%%%%%%%%%%%%%%%%
 %% Generelle Makros %%
@@ -287,7 +375,7 @@ pdfproducer={Latex with hyperref},
 \hypersetup{hidelinks, colorlinks, linkcolor = black, citecolor = black, filecolor = black, urlcolor = black}
 \fi
 
-\parindent0pt % Zeileneinzug verhindern
+%\parindent0pt % Zeileneinzug verhindern
 
 %Matlab font
 \newcommand{\matlab}[1]{\footnotesize{(Matlab: \texttt{#1})}\normalsize{}}
@@ -356,4 +444,3 @@ pdfproducer={Latex with hyperref},
 	\put(0.2,0.1){\circle*{0.14}}\put(0.27,0.1){\line(1,0){0.45}}\put(0.77,0.1){\circle{0.14}}
 	\end{picture}
 }
-
